@@ -1,0 +1,134 @@
+#!/bin/bash
+
+if [ $(id -u) != "0" ]; then
+     echo "Must run as root!"
+     exit
+fi
+ 
+#require sudo access to run program
+
+
+#### Header
+
+# File: CG_Project_Scripting1
+# Brief Description: Script for CSI-230-01 Project 1
+# Author: Courtney Grimes
+# Due Date: October 5, 2020
+
+#### Constants
+TITLE="System Information for $HOSTNAME"
+RIGHT_NOW="$(date +"%x %r %Z")"
+TIME_STAMP="Updated on $RIGHT_NOW by $USER"
+
+#### Functions
+Linux_Distribution()
+{
+    echo "<h2>Linux Distribution Information</h2>"
+    #creates and displays header  
+    echo "<p>"$(hostnamectl | grep Operating | cut -d ":" -f 2)"</p>" 
+    #gets distr. info., filters for just the distr. name/verison, cuts value title, then displays in>
+}
+
+Kernel_Information()
+{
+    echo "<h2>Kernel Information</h2>"
+    #creates and displays header
+    echo "<p>Kernal Name: $(uname -s)</p>"
+    #gets and displays kernel name
+    echo "<p>Kernal Release: $(uname -r)</p>"
+    #gets and displays kenrel release
+    echo "<p>Kernal Version: $(uname -v)</p>"
+    #gets and displays kernel version
+}
+
+CPU_Architecture()
+{
+    echo "<h2>CPU Architecture</h2>"
+    #creates and displays header
+    echo "<p>"$(uname -m)"</p>"
+    #gets and displays cpu architecture
+}
+
+Memory_Information()
+{
+    echo "<h2>Memory Information</h2>"
+    #creates and displays header
+    echo "<pre>$(free -t -h)</pre>"
+    # gets and displays the physical, SWAP and Total memory info. in human readable format
+}
+
+Disk_Information()
+{
+    echo "<h2>Disk Devices</h2>"
+    #creates and displays header 
+    echo "<pre>$(sudo fdisk -l)</pre>"
+    #gets and displays list of disk devices
+    echo "<h2>Disk Space</h2>"
+    #creates and displays header
+    echo "<pre>$(df -h)</pre>"
+    #gets and displays the space usage of any formatted parition in human readable format
+}
+
+Users_Information()
+{
+    echo "<h2>Users Information</h2>"
+    for user in $(cat /etc/passwd | grep bash | cut -d ":" -f -1)
+    do
+        echo "<p>$user</p>"
+        echo "<p>$(id $user)</p>"
+        echo "<p>    </p>"
+    done
+
+}
+
+Systems_Primary_IP_Address()
+{
+    echo "<h2>Primary IP Address for System</h2>"
+    #creates and displays header
+    echo "<p>Private: $(hostname -I)</p>"
+    #gets and displays the primary private IP address
+    echo "<p>Public: $(wget -qO- ifconfig.me)"
+    #gets and displays the primary public IP address
+}
+
+Login_History()
+{
+    echo "<h2>Login History</h2>"
+    #creates and displays header
+    echo "<pre>$(last -R)</pre>"
+    #gets and displays the history login for the machine
+}
+
+Uptime()
+{
+    echo "<h2>Uptime</h2>"
+    #creates and displays header
+    echo "<p>The system has been running $(uptime | cut -d "p" -f 2 | cut -d "," -f 1) since last boot</p>"
+    #gets and displays the time the system has been running since last boot, filtering out all other data
+}
+
+#### Main
+cat <<- _EOF_
+    <html>
+    <head>
+        <title>
+        $TITLE 
+        </title>
+    </head>
+
+    <body>
+    <h1>$TITLE</h1>
+    <p>$TIME_STAMP</P>
+    $(Linux_Distribution)
+    $(Kernel_Information)
+    $(CPU_Architecture)
+    $(Memory_Information)
+    $(Disk_Information)
+    $(Users_Information)
+    $(Systems_Primary_IP_Address)
+    $(Login_History)
+    $(Uptime)
+    </body>
+
+    </html>
+_EOF_
